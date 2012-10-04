@@ -12,8 +12,10 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.graphics.Color;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -22,7 +24,7 @@ import android.widget.LinearLayout;
  * @author 
  * @version 0.1
  */
-public class MainActivity extends Activity implements Runnable, OnClickListener{
+public class MainActivity extends Activity implements Runnable, OnClickListener, OnTouchListener{
 
 	/**
 	 * Tag for logging
@@ -58,51 +60,49 @@ public class MainActivity extends Activity implements Runnable, OnClickListener{
     		for (int j = 0; j < fieldCount[1]; j++){
     			fieldButtonArray[i][j] = new Button(this);
     			fieldButtonArray[i][j].setWidth(50);
+    			fieldButtonArray[i][j].setClickable(false);
+    			fieldButtonArray[i][j].setOnClickListener(this);
     			llLine.addView(fieldButtonArray[i][j]);
     		}
     	}
 	}
     
-    
+    private void deleteField(){
+    	rlMain.removeAllViews();
+    }
     
     public void startClick(View v) {
     	bStart = (Button)v;
+    	blockCounter = 0;
     	fieldBoolArray = blocks.getGameFiled();
+    	deleteField();
         createField();
     	v.setVisibility(View.INVISIBLE);
     	new Thread(this).start();
 	}
 
 	public void onClick(View v) {
+		Log.d(LOG_TAG, "onClick");
 		for (int i = 0; i < fieldCount[0]; i++){
 			for (int j = 0; j < fieldCount[1]; j++) {
-
-				if (v == fieldButtonArray[i][j]) {
+				if ((Button)v == fieldButtonArray[i][j]) {
 					if (!fieldButtonArray[i][j].isPressed())
+						Log.d(LOG_TAG, "Button not pressed");
 						if (!fieldBoolArray[i][j]) {
 							error(i, j);
 							return;
-						} else {
-							blockCounter++;
-							pressButton(fieldButtonArray[i][j]);
-							if (blockCounter == blocks.getRandomCounts()) {
-								finishGame();
-								return;
-							}
-						}
+						} 
 				}
 			}
 		}
 	}
 	
 	private void finishGame() {
+		Log.d(LOG_TAG, "finishGame()");
+		blockCounter = 0;
 		blocks.increaseGameField();
 		bStart.setText("Next");
 		bStart.setVisibility(View.VISIBLE);
-	}
-
-	private void pressButton(Button button) {
-		button.setPressed(true);
 	}
 
 	private void error(int i, int j) {
@@ -130,6 +130,7 @@ public class MainActivity extends Activity implements Runnable, OnClickListener{
 					for (int j = 0; j < fieldCount[1]; j++){
 						if (fieldBoolArray[i][j]){
 							fieldButtonArray[i][j].setPressed(true);
+							fieldButtonArray[i][j].setOnTouchListener(MainActivity.this);
 						}
 					}
 				}				
@@ -158,6 +159,20 @@ public class MainActivity extends Activity implements Runnable, OnClickListener{
 				}
 			}
 		});
+	}
+
+	public boolean onTouch(View v, MotionEvent event) {
+		if (event.getAction() == MotionEvent.ACTION_UP){
+			v.setPressed(true);
+			blockCounter++;
+			Log.d(LOG_TAG, blockCounter + " " + blocks.getRandomCounts());
+			if (blockCounter == blocks.getRandomCounts()) {
+				finishGame();
+			}
+			return true;
+		}
+		else
+			return false;
 	}
     
 }
