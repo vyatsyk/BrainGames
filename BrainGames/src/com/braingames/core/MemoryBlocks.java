@@ -5,11 +5,6 @@ package com.braingames.core;
 
 import java.util.Random;
 
-import android.app.Activity;
-import android.widget.Button;
-
-//import android.util.Log;
-
 /**
  * This class describes the basic principles of the game. 
  * The player has to memorize and retrieve a matrix.
@@ -17,26 +12,40 @@ import android.widget.Button;
  * @author Bogdan Rutylo
  * @version 0.1
  */
-public class MemoryBlocks implements Runnable{
+public class MemoryBlocks {
 	
 	/**
 	 * Logging tag.
 	 */
-	
 	public static final String LOG_TAG = "MemoryBlocks";
 	
 	/**
 	 * This is a field where the player must find the right marked blocks.
 	 */
 	private boolean [][] gameField;
-	private Button fieldArray[][] = null;
-	private Activity activity = null;
-	//TODO: We need to create playing fields that are not squares?
-
-	public MemoryBlocks(int fieldCount, Button[][] fieldArray,
-			Activity mainActivity) {
-		this.fieldArray = fieldArray;
-		activity = mainActivity;
+	
+	public static final int MAX_SIZE = 6; //Example 6x6 
+	public static final int MIN_SIZE = 3; //Example 3x3
+	
+	private int width = 3;
+	private int heigth = 3;
+	private int randomCounts = 3;
+	
+	
+	/**
+	 * This constructor needs call(once) when game is run. 
+	 */
+	public MemoryBlocks() {
+		
+		//first allocation
+		if(!allocateMemoryForField(heigth, width)) {
+			//Log.d(LOG_TAG, "Method allocateMemory() return - false");
+		}
+		
+		if(!fillGameField()) {
+			//Log.d(LOG_TAG, "Method fillGameField() return - false");
+		}
+		
 	}
 
 	/**
@@ -45,14 +54,16 @@ public class MemoryBlocks implements Runnable{
 	 * @param size of new array
 	 * @return true, if operation is successful
 	 */
-	private boolean allocateMemoryForField(int size) {
+	private boolean allocateMemoryForField(int heigth_size, int width_size) {
 		
-		if(size < MIN_SIZE || size > MAX_SIZE) {
+		if(heigth_size < MIN_SIZE || heigth_size > MAX_SIZE 
+								  || width_size < MIN_SIZE
+								  || width_size > MAX_SIZE) {
 			return false;
 		}
 		
 		try {
-			gameField = new boolean [size][size];
+			gameField = new boolean [heigth_size][width_size];
 		} catch (Exception e) {
 			// TODO: handle exception
 			//Log.d(LOG_TAG, "Some trouble with memory allocation");
@@ -72,39 +83,73 @@ public class MemoryBlocks implements Runnable{
 		
 		if(gameField == null) {
 			return false;
-		}
+		}		
 		
-		//Indexes of elements which will be set in "true"
-		int [] indexes = new int [gameField.length];
-		for(int i = 0; i < indexes.length; i++) {
-			indexes[i] = -1;
-		}
-		int tmp;
-		
-		//Random select the indexes (not work!!!) Тут я хотів згенерити унікальні
-		//індекси по яких би постави тру, але не генрю випадково цілий масив зарзу, бо тоді невідомо скільки тих тру елемнтів буде..а треба щоб спочаку мало.. а потім багато. в залежності від розміру.
-		/*
+		int true_counts = 0;
+		//Random select the indexes 
 		Random random = new Random();
-		for(int i = 0; i < gameField.length; i++) {
-			tmp = random.nextInt(gameField.length);
-			for(int j = 0; j < indexes.length; j++) {
-				if(tmp == indexes[j]) {
-					i--;
-					break;
+		for(int i = 0; i < heigth; i++) {
+			for(int j = 0; j < width; j++) {
+				gameField[i][j] = random.nextBoolean();
+				if(gameField[i][j] == true) {
+					true_counts++;
 				}
-				indexes[i] = tmp;
-				//break;
+				if(true_counts == randomCounts) {
+					return true;
+				}
 			}
 		}
-		*/
+				
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @return false if increase aborted
+	 */
+	public boolean increaseGameField() {
 		
-		//filling
-		for(int i = 0; i < gameField.length; i++) {
-			for(int j = 0; j < gameField.length; j++) {
-				gameField[i][j] = false;
-			}
+		if(heigth == MAX_SIZE && width == MAX_SIZE) {
+			return false;
 		}
+		try{
+			if(heigth == width) {
+				width++;
+			} else {
+				heigth++;
+			}
+			randomCounts++;
+			allocateMemoryForField(heigth, width);
+			fillGameField();
+		} catch (Exception e) {
+			// TODO: handle exception
+			
+		}
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @return false if decrease operation is aborted
+	 */
+	public boolean decreaseGameField() {
 		
+		if(heigth == MIN_SIZE && width == MIN_SIZE) {
+			return false;
+		}
+		try{
+			if(heigth == width) {
+				width--;
+			} else {
+				heigth--;
+			}
+			randomCounts--;
+			allocateMemoryForField(heigth, width);
+			fillGameField();
+		} catch (Exception e) {
+			// TODO: handle exception
+			
+		}
 		return true;
 	}
 	
@@ -115,25 +160,71 @@ public class MemoryBlocks implements Runnable{
 		return null;
 	}
 	
-//	/**
-//	 * Method for TESTING
-//	 * @param args
-//	 */
-//	public static void main(String[] args) {
-//		// TODO Auto-generated method stub
-//		MemoryBlocks mb = new MemoryBlocks();
-//		boolean [][] gf = mb.getGameFiled();
-//		
-//		for(int i = 0; i < gf.length; i++) {
-//			for(int j = 0; j < gf.length; j++) {
-//				System.out.print(gf[i][j] + " ");
-//			}
-//			System.out.println();
-//		}
-//	}
-
-	public void run() {
-		fillRandomField();
+	public int getRandomCounts() {
+	 
+		return randomCounts;
+	}
+	
+	/**
+	 * Method for TESTING
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		MemoryBlocks mb = new MemoryBlocks();
+		boolean [][] gf = mb.getGameFiled();
+		
+		print(gf);
+		
+		mb.increaseGameField();
+		gf = mb.getGameFiled();
+		System.out.println();
+		print(gf);
+		
+		mb.increaseGameField();
+		gf = mb.getGameFiled();
+		System.out.println();
+		print(gf);
+		
+		mb.increaseGameField();
+		gf = mb.getGameFiled();
+		System.out.println();
+		print(gf);
+		
+		mb.increaseGameField();
+		gf = mb.getGameFiled();
+		System.out.println();
+		print(gf);
+		
+		mb.increaseGameField();
+		gf = mb.getGameFiled();
+		System.out.println();
+		print(gf);
+		
+		mb.increaseGameField();
+		gf = mb.getGameFiled();
+		System.out.println();
+		print(gf);
+		
+		//last - return false
+		mb.increaseGameField();
+		gf = mb.getGameFiled();
+		System.out.println();
+		print(gf);
+		
+	}
+	
+	/*
+	 * for print test results
+	 */
+	public static void print(boolean [][] gf) {
+		
+		for(int i = 0; i < gf.length; i++) {
+			for(int j = 0; j < gf[0].length; j++) {
+				System.out.print(gf[i][j] + " ");
+			}
+			System.out.println();
+		}
 	}
 
 }
