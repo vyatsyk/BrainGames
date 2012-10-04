@@ -20,7 +20,7 @@ public class MainActivity extends Activity {
 	/**
 	 * Tag for logging
 	 */
-	public final String LOG_TAG = "MAIN_ACTIVITY";
+	public static final String LOG_TAG = "MAIN_ACTIVITY";
 	
 	/**
 	 * Create main activity
