@@ -5,6 +5,9 @@ package com.braingames.core;
 
 import java.util.Random;
 
+import android.app.Activity;
+import android.widget.Button;
+
 //import android.util.Log;
 
 /**
@@ -14,36 +17,26 @@ import java.util.Random;
  * @author Bogdan Rutylo
  * @version 0.1
  */
-public class MemoryBlocks {
+public class MemoryBlocks implements Runnable{
 	
 	/**
 	 * Logging tag.
 	 */
+	
 	public static final String LOG_TAG = "MemoryBlocks";
 	
 	/**
 	 * This is a field where the player must find the right marked blocks.
 	 */
 	private boolean [][] gameField;
-	
-	public static final int MAX_SIZE = 6; //Example 6x6 
-	public static final int MIN_SIZE = 3; //Example 3x3
+	private Button fieldArray[][] = null;
+	private Activity activity = null;
 	//TODO: We need to create playing fields that are not squares?
-	
-	/**
-	 * This constructor needs call(once) when game is run. 
-	 */
-	public MemoryBlocks() {
-		
-		//first allocation
-		if(!allocateMemoryForField(MIN_SIZE)) {
-			//Log.d(LOG_TAG, "Method allocateMemory() return - false");
-		}
-		
-		if(!fillGameField()) {
-			//Log.d(LOG_TAG, "Method fillGameField() return - false");
-		}
-		
+
+	public MemoryBlocks(int fieldCount, Button[][] fieldArray,
+			Activity mainActivity) {
+		this.fieldArray = fieldArray;
+		activity = mainActivity;
 	}
 
 	/**
@@ -122,21 +115,25 @@ public class MemoryBlocks {
 		return null;
 	}
 	
-	/**
-	 * Method for TESTING
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		MemoryBlocks mb = new MemoryBlocks();
-		boolean [][] gf = mb.getGameFiled();
-		
-		for(int i = 0; i < gf.length; i++) {
-			for(int j = 0; j < gf.length; j++) {
-				System.out.print(gf[i][j] + " ");
-			}
-			System.out.println();
-		}
+//	/**
+//	 * Method for TESTING
+//	 * @param args
+//	 */
+//	public static void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		MemoryBlocks mb = new MemoryBlocks();
+//		boolean [][] gf = mb.getGameFiled();
+//		
+//		for(int i = 0; i < gf.length; i++) {
+//			for(int j = 0; j < gf.length; j++) {
+//				System.out.print(gf[i][j] + " ");
+//			}
+//			System.out.println();
+//		}
+//	}
+
+	public void run() {
+		fillRandomField();
 	}
 
 }
