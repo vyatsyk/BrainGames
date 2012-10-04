@@ -45,7 +45,6 @@ public class MainActivity extends Activity implements Runnable, OnClickListener{
         setContentView(R.layout.activity_main);
         rlMain = (LinearLayout)findViewById(R.id.rlMainField);
         blocks = new MemoryBlocks();
-        createField();
     }
 
     private void createField() {
@@ -68,29 +67,36 @@ public class MainActivity extends Activity implements Runnable, OnClickListener{
     
     public void startClick(View v) {
     	bStart = (Button)v;
+    	fieldBoolArray = blocks.getGameFiled();
+        createField();
     	v.setVisibility(View.INVISIBLE);
     	new Thread(this).start();
 	}
 
 	public void onClick(View v) {
 		for (int i = 0; i < fieldCount[0]; i++){
-			for (int j = 0; j < fieldCount[1]; j++){
-				if (v == fieldButtonArray[i][j]){
-					if (!fieldBoolArray[i][j]){
-						error(i, j);
-					} else{
-						blockCounter++;
-						pressButton(fieldButtonArray[i][j]);
-						if (blockCounter == blocks.getCounter()){
-							finishGame();
+			for (int j = 0; j < fieldCount[1]; j++) {
+
+				if (v == fieldButtonArray[i][j]) {
+					if (!fieldButtonArray[i][j].isPressed())
+						if (!fieldBoolArray[i][j]) {
+							error(i, j);
+							return;
+						} else {
+							blockCounter++;
+							pressButton(fieldButtonArray[i][j]);
+							if (blockCounter == blocks.getRandomCounts()) {
+								finishGame();
+								return;
+							}
 						}
-					}
 				}
 			}
 		}
 	}
 	
 	private void finishGame() {
+		blocks.increaseGameField();
 		bStart.setText("Next");
 		bStart.setVisibility(View.VISIBLE);
 	}
@@ -100,6 +106,7 @@ public class MainActivity extends Activity implements Runnable, OnClickListener{
 	}
 
 	private void error(int i, int j) {
+		//blocks.decreaseGameField();
 		showField();
 		showError(i, j);
 	}
@@ -141,11 +148,16 @@ public class MainActivity extends Activity implements Runnable, OnClickListener{
 	}
 
 	private void hideField() {
-		for (Button i[]: fieldButtonArray){
-			for (Button j : i){
-				j.setPressed(false);
+		runOnUiThread(new Runnable() {
+			
+			public void run() {
+				for (Button i[]: fieldButtonArray){
+					for (Button j : i){
+						j.setPressed(false);
+					}
+				}
 			}
-		}
+		});
 	}
     
 }
