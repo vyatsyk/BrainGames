@@ -1,0 +1,19 @@
+{
+  "name": "chat-ui",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "ng": "ng",
+    "prestart": "cp src/environments/index.dev.html src/chat.html",
+    "start": "ng build --watch -op ../static/messaging/",
+    "prebuild": "cp src/environments/index.prod.html src/chat.html",
+    "build": "ng build --prod",
+    "postbuild": "replace '</body>' '' dist/chat.html && replace '<head>' '' dist/chat.html && replace '</head>' '' dist/chat.html && replace 'src=\"(.*?)\"' 'src=\"{% static \"messaging/$1\" %}\"' dist/chat.html && replace '<link href=\"(.*?)\"' '<link href=\"{% static \"messaging/$1\" %}\"' dist/chat.html && cp dist/chat.html ../templates/chat.html && rm -f ../static/messaging/* &&  cp dist/* ../static/messaging/ && rm ../static/messaging/chat.html",
+    "test": "ng test",
+    "lint": "ng lint",
+    "e2e": "ng e2e"
+  },
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {}
+}
